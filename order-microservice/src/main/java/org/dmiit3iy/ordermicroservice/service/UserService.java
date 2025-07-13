@@ -1,16 +1,22 @@
 package org.dmiit3iy.ordermicroservice.service;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.dmiit3iy.ordermicroservice.model.User;
 import org.dmiit3iy.ordermicroservice.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Transactional
 @RequiredArgsConstructor
-@Repository
+@Service
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Метод по добавлению пользователя
@@ -21,6 +27,7 @@ public class UserService {
         if (existByUsername(user.getUsername()) && existByEmail(user.getEmail())) {
             throw new IllegalArgumentException("username and email are both unique");
         }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
        return userRepository.save(user);
     }
 
@@ -33,6 +40,24 @@ public class UserService {
     public User findByID(long id) {
         return userRepository.findById(id).orElseThrow(() ->
                 new IllegalArgumentException("There is no user with this Id"));
+    }
+
+    /**
+     * Метод поиска по username
+     * @param username
+     * @return
+     */
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    /**
+     * Метод поиска по email
+     * @param email
+     * @return
+     */
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     /**
